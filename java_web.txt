@@ -1,0 +1,2 @@
+1.servlet不能生成web.xml问题
+	要在最上面的菜单栏新建servlet才可以

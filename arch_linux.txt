@@ -1,0 +1,13 @@
+安装教程
+	http://tieba.baidu.com/p/2307324919
+	注意后面网络问题
+1.安装不能联网问题
+	nano /etc/resolv.conf
+	添加个DNS比如114.114.114.114
+	虚拟机设置NAT网络模式
+2.系统不能联网问题
+	网卡未启动
+	ip addr 查看eth?
+	ipconfig eno16777736 up
+	dhcpcd
+	=====ok

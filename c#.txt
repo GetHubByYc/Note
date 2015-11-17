@@ -1,0 +1,8 @@
+1.c#中的引用为ref和out
+2.c#动态链接库.dll的创建和使用
+	#http://jingyan.baidu.com/article/6525d4b1091539ac7d2e9407.html
+3.类是引用类型的而结构体是值类型
+4.关键字
+	sealed readonly ref out internal 
+	get set value virtual override abstract base
+	partial base

@@ -1,0 +1,43 @@
+1.orcale12 登录用的是sqlplus
+2.orcale12 第一次或许不知道用户名
+	打开cmd sqlplus/as sysdba;
+		alter sys username identified by pwd;
+		用sqlplus登录该用户注意：密码为pwd as sysdba
+	#注：
+		sys;//系统管理员，拥有最高权限
+		system;//本地管理员，次高权限
+		scott;//普通用户，默认密码tiger,默认未解锁
+3.创建一个用户    ###http://www.2cto.com/database/201209/153092.html
+		create user c##java identified by yy19931001
+  给用户分配基本权限
+  		grant connect, resource to c##java;
+  		grant create session to c##java;
+  查看当前用户管理的用户
+  		select * from user_users;
+4.开启EM		##http://www.eygle.com/archives/2013/07/oracle_database_12c_em_express.html
+ 		SQL>exec DBMS_XDB_CONFIG.setHTTPPort(5501);
+ 		Google_Chrome --> http://localhost:5501/em
+5.java连接orcale报错 !ORA-28040: No matching authentication protocol
+		##http://bbs.csdn.net/topics/390660951?page=1
+		$ORACLE_HOME/network/admin/sqlnet.ora文件，
+		如果没有可以创建一个新的，加入下面的参数
+			SQLNET.ALLOWED_LOGON_VERSION=8 
+6.普通用户登陆EM
+ 	####http://www.oracle.com/technetwork/database/manageability/emx-intro-1965965.html
+	SQL> grant EM_EXPRESS_BASIC to <user>;
+7.切换登录
+	SQL> conn usr/pwd;
+8.http://localhost:5501/isqlplus ##XDB的用户名和密码
+	据说isalplus只是一个阑尾，所以可以无视，选择工具pl/sql developer
+	pl/sql developer只支持X86故放弃
+	最终择 navicat_X64 界面之豪华，注意第一次连接的时候设置下OCI路径
+9.oracle对表空间 USERS 无权限 
+	##http://blog.sina.com.cn/s/blog_8ab3b2cf0100zmfd.html
+	SQL>alter user 用户名 quote unlimited on users;
+10.出现表名无效
+	####http://www.cnblogs.com/jtmjx/archive/2012/07/03/2574766.html
+	#ORCALE对大小写敏感 故表名需要添加“”（双引号）
+	eg:String sql = "select * from  \"student\" where \"name\"='yeoh'";
+11.insert 
+	String in_sql = "insert into \"student\" (\"id\",\"name\",\"score\") values (3,'yy',100)";
+12.为了解决转义符\"的问题，故在创立orcale表的时候表名用大写

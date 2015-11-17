@@ -1,0 +1,9 @@
+1.bean不能找到property问题
+	新建工程的时候 Target runtime 选择Tomcat
+2.mysql连接问题
+     把mysql-connector-java-5.1.37-bin.jar放入C:\myEclipse\binary\com.sun.java.jdk7.win32.x86_64_1.7.0.u45\jre\lib\ext
+3.myEclipse运行时报错 java.lang.nullpointer*... 错误
+	myEclipse自带MyEclipse_Tomcat，而我自己去配置一个自己的Tomcat多余，删除就只恢复了
+4.javabean的类必须放包下，不能放默认的包下。
+5.mysql创建表并检测其是否存在
+	CREATE TABLE IF NOT EXISTS  tb_goods(name varchar(20),price double,description varchar(50))

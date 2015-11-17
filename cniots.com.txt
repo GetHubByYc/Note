@@ -1,0 +1,153 @@
+###############################芯联科技##############################
+--1----出现了问题IIS 500.19-------
+#解决地址 http://jingyan.baidu.com/article/0bc808fc981df11bd485b9c0.html
+	1.添加了Everyone 权限：修改 √
+
+--2----出现了问题 The 'microsoft.jet.oledb.4.0' provider is not registeredon the local machine------
+	#传说是这个microsoft.jet.oledb.4.0在x64的机器存在兼容性的工程
+#解决地址
+	 #1.cscript %SYSTEMDRIVE%\inetpub\adminscripts\adsutil.vbs SET W3SVC/AppPools/Enable32bitAppOnWin64 1【CMD命令】 失败了
+	 #2.ASP中启用了父路径
+      3.在高级设置中启动了32位程序，然后重启了计算机 -- OK【原来要重启】
+
+2015年10月30日 19:34:16
+	1.修复标题栏选项问题，添加了新闻
+	2.修复页面foot无显示问题
+	3.修复ueditor问题
+	    1).不能插入图片的问题，原来是跨域啊，坑爹啊这是
+	    		找到ueditor\dialogs\internal.js
+	    			添加
+	    			function () {
+					    var parent = window.parent;
+					    document.domain = 'cit.cn';
+					    //...
+	      		#http://www.dedecms.com/knowledge/web-based/javascript-ajax/2012/1115/16617.html
+	    2).修复ueditor图片上传路径问题，在ueditor.config中设置 var URL = "/admin/ueditor/"
+	   								在config.json中设置各种前缀位"/admin/ueditor/"
+ 2015年10月31日 15:02:00
+ 	1.修复ueditor乱码，失效的问题，昨天明明修复了，今天又不行了，换成了官网的ueditor-utf8，修改了ueditor.config中
+ 							 window.UEDITOR_HOME_URL = "/admin/ueditor/";
+ 							 在config.json中修改了前缀位置
+ 	2.添加了几条新闻
+ 	3.修复200k文件大小限制
+						 	在iis上默认是有200k上传限制的，如果图片大于200k（程序报错：没有权限操作），在asp版的ueditor上是无法上传成功的，为了解决这个问题，又想到了神一般的上传组件无惧上传，它能把上传获取的数据分成64k一块来写入服务器，想到全部改写ueditor的上传组件有点耗时还麻烦，那就改进它吧，打开：
+						ueditor\asp\MultiformProcessor.class.asp，定位到70行：
+
+						formBytes = Request.BinaryRead( Request.TotalBytes )处，把这三行： 
+						 
+						 'formBytes = Request.BinaryRead( Request.TotalBytes )
+						 'Set stream = OpenStream( adTypeBinary )
+						 'stream.Write formBytes
+						注释掉，或删除，在前面插入：
+						         Set stream = OpenStream( adTypeBinary )       
+						         '循环分块读取
+						        dim ReadBytes,nTotalBytes
+						         ReadBytes = 0
+						         nTotalBytes = Request.TotalBytes
+						         Do While ReadBytes < nTotalBytes
+						         '分块读取
+						            nPartBytes = 64 * 1024 '分成每块64k
+						             If nPartBytes + ReadBytes > nTotalBytes Then
+						                 nPartBytes = nTotalBytes - ReadBytes
+						             End If
+						             stream.Write Request.BinaryRead(nPartBytes)
+						             ReadBytes = ReadBytes + nPartBytes
+						         Loop      
+						         stream.Position = 0
+						         formBytes = stream.Read
+						即可解决asp版ueditor上传iis服务器默认200k报错的问题。
+						我不是高手，我只是有点思想的代码搬动工。
+						 
+						附：当然，可以改iis服务器配置文件的话，也能解决上传大于200k文件的问题，以下内容复制网上：
+						先在服务里关闭iis admin service服务(运行里输入 iisreset /stop)，找到windows\system32\inesrv\下的metabase.xml, 打开，找到ASPMaxRequestEntityAllowed 把他修改为需要的值，默认为204800，即200K，如把它修改为51200000（50M）。
+						然后重启iis admin service服务。(运行里输入 iisreset /restart)
+ 		http://blog.sina.com.cn/s/blog_3ec2009f0102vkoa.html
+ 	4.不存在跨域问题，删除上述问题，OK了，改了JS服务器一定要刷新啊，坑爹啊
+ 2015年11月1日 11:53:44
+ 	1.修复芯联视频相关问题
+ 	2.修复公司新闻
+ 	3.理解函数basic.jiequ();
+ 	4.解决首页推荐产品重复问题
+ 	5.更新来回推荐产品方法
+ 	4.修复各种标题高亮问题
+ 	5.删除后台./admin下面多余项
+################################xldk#################################
+--1----出现问题 The following information can be helpful to determine why the assembly 'Interop.SQLDMO' could not be loaded.----
+		1.原来是程序池设置错误，换回了xldk后就正常了
+--2----出现问题 A network-related or instance-specific error occurred while establishing 
+				a connection to SQL Server. The server was not found or was not accessible. 
+				Verify that the instance name is correct and that SQL Server is configured to 
+				allow remote connections. (provider: Named Pipes Provider, error: 40 - Could not 
+				open a connection to SQL Server)
+		1.SQL服务器没开，打开CMD net start mssqlserver
+--3----出现问题 用户 'sa' 登录失败
+		#在web.config查到'sa'字样找到了密码是123466，然后利用sql server管理工具将sa的密码改成了123456
+--4----出现问题HttpException (0x80072749): Unable to make the session state request to the session state server. Please ensure that the ASP.NET State 			service is started and that the client and server ports are the same
+		#解决地址  http://www.cnblogs.com/jiahello/archive/2010/01/18/1650679.html
+		1. 开启ASP.NET State Service服务：选择管理工具->服务，找到ASP.NET State Service，点开后选择启动，并将启动类型设为自动。
+		2.将web.config打开，会看到有一行是<sessionState mode="InProc" stateConnectionString="tcpip=127.0.0.1:42424" timeout="20"/>，如果没有，请在<system.web>的下一行添加，再将其中的InProc改为StateServer，保存即可。
+--5----每次reboot后sa的密码都会改变
+2015年11月12日 09:46:28
+1.员工工号在数据库ty_hr_staff
+  用户信息在数据库ty_user
+  仓库设置在数据库ty_crm_KuFang ifDel为true则表示删除
+  c#弹出调试信息  Response.Write("<script>alert('"+ CountsLabel.Text + "')</script>");
+  2.解决仓库相关问题-
+  	 仓库设置
+	 modified:   tysoft/KCGL/KuFang/KuFang.aspx.cs        -> 57#      string SQL_GetList_xs = "select * from ty_crm_KuFang where Ifdel=0" + Sqlsort + "";
+	 库存列表中删除后还显示
+	 modified:   tysoft/KCGL/Kucun/Kucun.aspx.cs          -> 56#      string SQL_GetList = "select * from ty_crm_KuFang where  CHARINDEX('" + Session["username"] + ",',KcUsername) > 0 and Ifdel=0";
+	 仓库设置删除权限问题
+	 modified:   tysoft/KCGL/KuFang/KuFang.aspx.cs        -> 196#     string SqlStr = " update ty_crm_KuFang set IfDel='1' where  ID in (" + CheckStr + ")  and KcUsername like'%"+user_name+"%'";
+	 仓库初始化显示删除的仓库
+	 modified:   tysoft/KCGL/Chishihua/Chushi.aspx.cs     -> 52# 	  string SQL_GetList_xs = "select * from ty_crm_KuFang where Ifdel=0" + Sqlsort + "";
+	 采购入库仓库显示问题
+	 modified:   tysoft/KCGL/RuKu/RuKu.aspx.cs     	      -> 89# 	  string sql_down_ck = "select * from ty_crm_KuFang where (CHARINDEX('" + Session["username"] + ",',KcUsername) > 0) and Ifdel=0";
+	 modified:   tysoft/CGGL/RuKu/RuKu.aspx.cs      	  -> 61#      string sql_down_ck = "select * from ty_crm_KuFang where Ifdel=0";
+	 modified:   tysoft/CGGL/Jiankong/RuKu.aspx.cs   	  -> 61#      string sql_down_ck = "select * from ty_crm_KuFang where Ifdel=0";
+     modified:   tysoft/CGGL/CaiGou/Ruku_add.aspx.cs      -> 31#	  string sql_down_ck = "select * from ty_crm_KuFang where Ifdel=0";
+     modified:   tysoft/CGGL/CaiGou/RuKu_update.aspx.cs   -> 31#      string sql_down_ck = "select * from ty_crm_KuFang where Ifdel=0";
+	 modified:   tysoft/CGGL/CaiGou/RuKu_update.aspx.cs   -> 30#      string sql_down_ck = "select * from ty_crm_KuFang where Ifdel=0";
+	 -....
+	    modified:   tysoft/CGGL/CaiGou/RuKu_update.aspx.cs
+        modified:   tysoft/CGGL/CaiGou/Ruku_add.aspx.cs
+        modified:   tysoft/CGGL/Jiankong/RuKu.aspx.cs
+        modified:   tysoft/CGGL/RuKu/Ruku_add.aspx.cs
+        modified:   tysoft/CGGL/RuKu/Ruku_update.aspx.cs
+        modified:   tysoft/HTDD/Chuku/Chuku.aspx.cs
+        modified:   tysoft/HTDD/Chuku/Chuku_add.aspx.cs
+        modified:   tysoft/HTDD/Chuku/Chuku_update.aspx.cs
+        modified:   tysoft/HTDD/HeTong/Chuku_add.aspx.cs
+        modified:   tysoft/HTDD/HeTong/Chuku_update.aspx.cs
+        modified:   tysoft/HTDD/Jiankong/Chuku.aspx.cs
+        modified:   tysoft/KCGL/BaoShun/BaoShun.aspx.cs
+        modified:   tysoft/KCGL/BaoShun/BaoShun_add.aspx.cs
+        modified:   tysoft/KCGL/BaoShun/BaoShun_update.aspx.cs
+        modified:   tysoft/KCGL/BaoYi/BaoYi.aspx.cs
+        modified:   tysoft/KCGL/BaoYi/BaoYi_add.aspx.cs
+        modified:   tysoft/KCGL/ChuKu/ChuKu.aspx.cs
+        modified:   tysoft/KCGL/ChuKuZhiJie/ChuKuZhiJie.aspx.cs
+        modified:   tysoft/KCGL/ChuKuZhiJie/ChuKuZhiJie_add.aspx.cs
+        modified:   tysoft/KCGL/DiaoBo/DiaoBo.aspx.cs
+        modified:   tysoft/KCGL/DiaoBo/DiaoBo_add.aspx.cs
+        modified:   tysoft/KCGL/DiaoBo/DiaoBo_update.aspx.cs
+        modified:   tysoft/KCGL/DiaoBo/DiaoBo_zhixing.aspx.cs
+        modified:   tysoft/KCGL/Liushui/Liushui.aspx.cs
+        modified:   tysoft/KCGL/Pandian/Pandian.aspx.cs
+        modified:   tysoft/KCGL/Pandian/Pandian_add.aspx.cs
+        modified:   tysoft/KCGL/RuKuZhiJie/RuKuZhiJie.aspx.cs
+        modified:   tysoft/KCGL/RuKuZhiJie/RuKuZhiJie_add.aspx.cs
+
+	-....
+
+    数据库从2014到2008备份恢复
+    	#http://blog.sina.com.cn/s/blog_842339240102uzp6.html
+    	1. 首先把要把sql2014中要备份的数据库设置为兼容2008.
+          右键sql2014中的数据库-属性-选项-兼容性2008
+        2.右键数据库-任务-生成脚本，下一步-下一步到达下图，点 高级  选项。把script for sql  version
+          改成你要降级的那个版本 也就是sql2008.确定完成即可。会生成一个script.sql
+	    3.高级->要编写脚本的数据的类型->构架和数据
+	    4.找到你这个sql2014数据库在电脑中的位置。 右键这个数据库-文件 会有路径，复制出这两个文件来。 至此 sqlserver2012的电脑操作完成
+	    5.把上面得到的script.sql 文件和两个数据源文件复制到sql2008所在的电脑中。在sql2008中  新建-查询管理器。把script.sql拖进去，会看到代码。 
+	    6.此时显示的数据库文件位置是sql2012电脑的位置。我们需要把这两个地址改为 sql2008 中 你复制过来的那两个源文件的地址即可。运行F5执行  成功。
+       
